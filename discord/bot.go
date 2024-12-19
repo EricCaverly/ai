@@ -40,7 +40,10 @@ func leave_voice() {
 		c.Disconnect()
 		close(c.OpusRecv)
 		c.Close()
+
 	}
+	Calls.vc = []*discordgo.VoiceConnection{}
+	Calls.mutx.Unlock()
 }
 
 func join_voice(s *discordgo.Session, m *discordgo.MessageCreate) {
