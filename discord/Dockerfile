@@ -1,11 +1,11 @@
-FROM python:3.14.0a3-bullseye
-
-RUN apt-get install -y gcc
+FROM golang:1.23.4-alpine3.21
 
 WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r pip_list
+RUN go mod download
 
-CMD ["python", "main.py"]
+RUN go build -o ./discord_bot
+
+CMD ["./discord_bot"]
