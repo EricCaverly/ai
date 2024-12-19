@@ -1,0 +1,11 @@
+services:
+  discord_bot:
+    image: discord
+    hostname: discord.netv.local
+  
+  vosk:
+    image: alphacep/kaldi-en:latest
+    hostname: vosk.netv.local
+    ports:
+      - 2700:2700
+      
