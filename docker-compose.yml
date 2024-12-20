@@ -1,11 +1,14 @@
 services:
   discord_bot:
-    image: discord
+    image: netv_disc
     hostname: discord.netv.local
   
-  vosk:
-    image: alphacep/kaldi-en:latest
-    hostname: vosk.netv.local
+
+  whisper:
+    image: netv_wisp
+    hostname: whisper.netv.local
     ports:
-      - 2700:2700
+      - 8080:8000
+    #volumes:
+    #  - ./wisper:/data
       

@@ -14,7 +14,8 @@ type VoiceSessions struct {
 }
 
 var (
-	Calls VoiceSessions
+	Calls        VoiceSessions
+	ssrc_to_user = make(map[uint32]string)
 )
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -63,7 +64,7 @@ func join_voice(s *discordgo.Session, m *discordgo.MessageCreate) {
 	Calls.vc = append(Calls.vc, vc)
 	Calls.mutx.Unlock()
 
-	handleVoice(vc.OpusRecv)
+	handleVoice(s, m.ChannelID, vc.OpusRecv)
 }
 
 func find_vc(s *discordgo.Session, m *discordgo.MessageCreate) (*discordgo.Guild, *discordgo.VoiceState, error) {
