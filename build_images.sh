@@ -1,5 +1,5 @@
 cd ./discord
 docker build -t netv_disc .
-cd ../wisper
+cd ../whisper
 docker build -t netv_wisp .
 cd ..

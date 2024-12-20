@@ -4,7 +4,6 @@ FROM python:3.10-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV WISPER_CACHE=/app/models
 
 # install FFMPeg
 RUN apt-get -y update
@@ -16,7 +15,8 @@ WORKDIR /app
 # Copy application files
 COPY . .
 
-VOLUME /app/models
+# Volume for models
+VOLUME /root/.cache/whisper
 
 # Install Python dependencies
 RUN pip install --no-cache-dir fastapi uvicorn python-multipart openai-whisper
