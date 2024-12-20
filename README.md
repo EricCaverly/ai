@@ -7,6 +7,7 @@ This is going to become a custom Neuro-Sama clone. I do not take credit for the 
 3. Enter your discord bot API token with the following command `echo "@TOKENHERE" >> discord/token.hide`
 4. Build the local images with `./build_images.sh` (This will take a while)
 5. Bring the stack up with `docker compose up -d`
+6. The commands for joining and leaving voice calls are `!join` and `!leave`
 
 ## TODO
 
