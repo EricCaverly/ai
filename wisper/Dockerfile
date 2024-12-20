@@ -16,6 +16,8 @@ WORKDIR /app
 # Copy application files
 COPY . .
 
+VOLUME /app/models
+
 # Install Python dependencies
 RUN pip install --no-cache-dir fastapi uvicorn python-multipart openai-whisper
 

@@ -23,6 +23,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	if len(m.Content) == 0 {
+		return
+	}
+
 	if m.Content[0] != '!' {
 		return
 	}

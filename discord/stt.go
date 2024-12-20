@@ -19,7 +19,8 @@ import (
 
 const (
 	//whisper_uri = "http://localhost:8080/transcribe/"
-	whisper_uri = "http://whisper.netv.local:8000"
+	whisper_uri          = "http://whisper.netv.local:8000/transcribe/"
+	sentance_end_time_ms = 300
 )
 
 func createPionRTPPacket(p *discordgo.Packet) *rtp.Packet {
@@ -110,7 +111,7 @@ func handleVoice(s *discordgo.Session, chan_id string, discord_packets chan *dis
 		}
 
 		speech.length += len(p.Opus)
-		speech.endTime = time.Now().Add(time.Millisecond * 400)
+		speech.endTime = time.Now().Add(time.Millisecond * sentance_end_time_ms)
 		users[p.SSRC] = speech
 		u_mut.Unlock()
 	}

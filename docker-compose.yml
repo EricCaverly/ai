@@ -9,6 +9,6 @@ services:
     hostname: whisper.netv.local
     ports:
       - 8080:8000
-    #volumes:
-    #  - ./wisper:/data
+    volumes:
+      - ./wisper/models:/app/models
       
