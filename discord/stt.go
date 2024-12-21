@@ -61,6 +61,12 @@ func handleVoice(s *discordgo.Session, chan_id string, discord_packets chan *dis
 			u_mut.Lock()
 			// Go over each user is currently speaking users
 			for i := range users {
+
+				// Prevent out of bounds checks
+				if i > len(users)-1 {
+					break
+				}
+
 				// If their sentance has not timed out, skip
 				if users[i].endTime.After(time.Now()) {
 					continue
