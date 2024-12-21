@@ -47,6 +47,8 @@ type Speech struct {
 type WhisperResp struct {
 	Transcription string `json:"transcription"`
 	Username      string `json:"username"`
+	GlobalName    string `json:"global_name"`
+	Nickname      string `json:"nickname"`
 }
 
 func handleVoice(s *discordgo.Session, chan_id string, discord_packets chan *discordgo.Packet) {
@@ -65,7 +67,7 @@ func handleVoice(s *discordgo.Session, chan_id string, discord_packets chan *dis
 				}
 
 				// Otherwise, they have not made noise for sentance_end_time_ms and are probably done talking
-				log.Printf("user %d stopped talking", i)
+				log.Printf("user %d stopped talking", users[i].ssrc)
 
 				// Close the OGG file
 				users[i].file.Close()
@@ -74,14 +76,23 @@ func handleVoice(s *discordgo.Session, chan_id string, discord_packets chan *dis
 				if users[i].length > 10 {
 					// Call the send function, which will call the whisper API, returning transcription data
 					whisper_data, err := send_speech_to_whisper(users[i].ssrc)
+					member, ok := ssrc_to_user[users[i].ssrc]
+					if ok {
+						whisper_data.GlobalName = member.User.GlobalName
+						whisper_data.Nickname = member.Nick
+						whisper_data.Username = member.User.Username
+					}
 					if err != nil {
 						log.Printf("problem sending data to whisper: %s\n", err.Error())
 					}
 
 					// If the length of the transcription is not 0, actual text was received
 					if len(whisper_data.Transcription) > 0 {
-						fmt.Printf("%s : %s\n", whisper_data.Username, whisper_data.Transcription)
-						s.ChannelMessageSend(chan_id, whisper_data.Transcription)
+						fmt.Printf("%s : %s\n", whisper_data.GlobalName, whisper_data.Transcription)
+						s.ChannelMessageSend(chan_id, fmt.Sprintf("%s: %s", whisper_data.GlobalName, whisper_data.Transcription))
+
+						// TODO: Make API call to LLM Here
+
 						// Otherwise, if the length is 0, likely it was just hot mic, and should not be sent to LLM
 					} else {
 						fmt.Println("empty transcription returned")

@@ -20,7 +20,7 @@ type VoiceSession struct {
 var (
 	calls        []VoiceSession
 	calls_mutx   sync.Mutex
-	ssrc_to_user = make(map[uint32]string)
+	ssrc_to_user = make(map[uint32]*discordgo.Member)
 )
 
 // Message Created Handler
@@ -65,6 +65,8 @@ func leave_voice(guild_id string) {
 		i++
 	}
 	calls_mutx.Unlock()
+
+	log.Printf("Left a voice call in %s\n", guild_id)
 }
 
 func join_voice(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -75,19 +77,54 @@ func join_voice(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	calls_mutx.Lock()
+	for _, call := range calls {
+		if call.guild_id == g.ID {
+			s.ChannelMessageSend(m.ChannelID, "Already in a voice call. Please make me leave that one first")
+			calls_mutx.Unlock()
+			return
+		}
+	}
+
 	// Join that voice call
 	vc, err := s.ChannelVoiceJoin(g.ID, vs.ChannelID, true, false)
 	if err != nil {
 		log.Printf("Failed to join VC: %s\n", err.Error())
 	}
 
+	// Add a speaking event handler to map SSRC to members
+	vc.AddHandler(func(vc *discordgo.VoiceConnection, vs *discordgo.VoiceSpeakingUpdate) {
+		if vs.Speaking {
+			// Try to find the user associated with this user id
+			member, err := s.GuildMember(g.ID, vs.UserID)
+			if err != nil {
+				log.Printf("Error finding member of userid: %s\n", vs.UserID)
+				return
+			}
+
+			// Remove old entries for this user
+			for ssrc, mb := range ssrc_to_user {
+				if mb.User.ID == vs.UserID {
+					delete(ssrc_to_user, ssrc)
+					log.Printf("Removed old record (%d --> %s)\n", ssrc, mb.User.GlobalName)
+				}
+			}
+
+			// Add this user to a new entry with correct SSRC
+			ssrc_to_user[uint32(vs.SSRC)] = member
+			log.Printf("Mapped SSRC:%d --> %s\n", vs.SSRC, member.User.GlobalName)
+		}
+
+	})
+
 	// Make a new entry in the calls slice containing a reference to the call
-	calls_mutx.Lock()
 	calls = append(calls, VoiceSession{
 		connection: vc,
 		guild_id:   g.ID,
 	})
 	calls_mutx.Unlock()
+
+	log.Printf("Joined a voice call in %s\n", g.ID)
 
 	// Begin handling voice call related logic for transcription
 	handleVoice(s, m.ChannelID, vc.OpusRecv)
