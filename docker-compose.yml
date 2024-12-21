@@ -9,6 +9,14 @@ services:
     hostname: whisper.netv.local
     volumes:
       - ./whisper/models:/root/.cache/whisper
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
       
   web:
     image: nginx
